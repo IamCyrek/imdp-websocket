@@ -1,15 +1,38 @@
 var stompClient = null;
+var userName = "";
+var isNameEntering = true;
+
+function hide() {
+    $("#conversation").hide();
+    $("#inputLabel").hide();
+    $("#inputText").hide();
+    $("#send").hide();
+}
+
+function show() {
+    $("#conversation").show();
+    $("#inputLabel").show();
+    $("#inputText").show();
+    $("#send").show();
+}
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);
     $("#disconnect").prop("disabled", !connected);
+    $("#messages").html("");
+}
+
+function setInputForm(connected) {
     if (connected) {
-        $("#conversation").show();
+        show();
+
+        isNameEntering = true;
+        $("#inputLabel").html("What is your name?");
+        $("#inputText").attr('maxlength','63');
+        $("#inputText").val(userName);
+    } else {
+        hide();
     }
-    else {
-        $("#conversation").hide();
-    }
-    $("#greetings").html("");
 }
 
 function connect() {
@@ -17,9 +40,10 @@ function connect() {
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         setConnected(true);
+        setInputForm(true);
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/greetings', function (greeting) {
-            showGreeting(JSON.parse(greeting.body).content);
+        stompClient.subscribe('/topic/messages', function (message) {
+            showMessage(JSON.parse(message.body));
         });
     });
 }
@@ -29,17 +53,41 @@ function disconnect() {
         stompClient.disconnect();
     }
     setConnected(false);
+    setInputForm(false);
     console.log("Disconnected");
 }
 
 function sendName() {
-    stompClient.send("/app/hello", {}, JSON.stringify({'name': $("#name").val()}));
+    if (isNameEntering) {
+        stompClient.send("/app/hello", {}, JSON.stringify(
+            {
+                'name': $("#inputText").val(),
+                'creationTime': +new Date()
+            }));
 
-    $("#name").val("");
+        isNameEntering = false;
+        $("#inputLabel").html("Type your message");
+        userName = $("#inputText").val();
+        $("#inputText").attr('maxlength','255');
+    } else {
+        stompClient.send("/app/messaging", {}, JSON.stringify(
+            {
+                'userName': userName,
+                'content': $("#inputText").val(),
+                'creationTime': +new Date()
+            }));
+    }
+
+    $("#inputText").val("");
 }
 
-function showGreeting(message) {
-    $("#greetings").append("<tr><td>" + message + "</td></tr>");
+function showMessage(message) {
+    $("#messages").append(
+        "<tr>" +
+            "<td>" + message.userName + "</td>" +
+            "<td>" + message.content + "</td>" +
+        "</tr>"
+    );
 }
 
 $(function () {
@@ -50,5 +98,5 @@ $(function () {
     $( "#disconnect" ).click(function() { disconnect(); });
     $( "#send" ).click(function() { sendName(); });
 
-    $("#conversation").hide();
+    hide();
 });
