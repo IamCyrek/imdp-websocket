@@ -30,10 +30,18 @@
         <div class="col-md-6">
             <form class="form-inline">
                 <div class="form-group">
-                    <label id="inputLabel" for="inputText">What is your name?</label>
-                    <input type="text" id="inputText" class="form-control">
+                    <label id="inputLabelName" for="inputTextName">What is your name?</label>
+                    <input type="text" id="inputTextName" class="form-control">
+                    <button id="sendName" class="btn btn-default" type="submit">Send</button>
                 </div>
-                <button id="send" class="btn btn-default" type="submit">Send</button>
+                <div class="form-group">
+                    <label id="inputLabel" for="inputText">Type your message</label>
+                    <input type="text" id="inputText" class="form-control">
+                    <button id="send" class="btn btn-default" type="submit">Send</button>
+                </div>
+                <div class="text-center">
+                    <p id="typing"></p>
+                </div>
             </form>
         </div>
     </div>

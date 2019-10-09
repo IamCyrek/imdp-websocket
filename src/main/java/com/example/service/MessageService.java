@@ -5,7 +5,9 @@ import com.example.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -13,8 +15,10 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
 
-    public List<Message> findAll() {
-        return messageRepository.findAll();
+    private Set<String> userNameSet = new HashSet<>();
+
+    public List<Message> find10LastMessages() {
+        return messageRepository.findTop10ByOrderByCreationTimeDesc();
     }
 
     public Message hello(final Message message) {
@@ -26,4 +30,12 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
+    public Set<String> typing(String userName, Boolean isTyping) {
+        if (isTyping)
+            userNameSet.add(userName);
+        else
+            userNameSet.remove(userName);
+
+        return userNameSet;
+    }
 }

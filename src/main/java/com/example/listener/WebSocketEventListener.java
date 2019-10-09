@@ -39,6 +39,7 @@ public class WebSocketEventListener {
             messageDTO.setCreationTime(new Date());
 
             messageService.save(messageMapper.messageDtoToMessage(messageDTO));
+            messageService.typing(userName, false);
 
             messagingTemplate.convertAndSend("/topic/messages", messageDTO);
         }
