@@ -18,31 +18,49 @@
 <div id="main-content" class="container">
     <div class="row">
         <div class="col-md-6">
-            <form class="form-inline">
+            <form id="connectionForm" class="form-inline">
                 <div class="form-group">
-                    <label for="connect">WebSocket connection:</label>
-                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                    </button>
+                    <label for="disconnect">WebSocket:</label>
+                    <button id="disconnect" class="btn btn-default" type="submit">Disconnect</button>
                 </div>
+            </form>
+            <form id="roomForm" class="form-inline">
+                <div class="form-group">
+                    <label for="room">What room?</label>
+                    <select class="form-control" id="room">
+                        <option value=0>1</option>
+                        <option value=1>2</option>
+                        <option value=2>3</option>
+                        <option value=3>4</option>
+                        <option value=4>5</option>
+                        <option value=5>6</option>
+                        <option value=6>7</option>
+                        <option value=7>8</option>
+                        <option value=8>9</option>
+                        <option value=9>10</option>
+                    </select>
+                </div>
+                <button id="chooseRoom" class="btn btn-default" type="submit">Choose</button>
             </form>
         </div>
         <div class="col-md-6">
-            <form class="form-inline">
+            <form id="name" class="form-inline">
                 <div class="form-group">
                     <label id="inputLabelName" for="inputTextName">What is your name?</label>
                     <input type="text" id="inputTextName" class="form-control">
-                    <button id="sendName" class="btn btn-default" type="submit">Send</button>
                 </div>
+                <button id="sendName" class="btn btn-default" type="submit">Send</button>
+            </form>
+            <form id="message" class="form-inline">
                 <div class="form-group">
                     <label id="inputLabel" for="inputText">Type your message</label>
                     <input type="text" id="inputText" class="form-control">
-                    <button id="send" class="btn btn-default" type="submit">Send</button>
                 </div>
-                <div class="text-center">
-                    <p id="typing"></p>
-                </div>
+                <button id="send" class="btn btn-default" type="submit">Send</button>
             </form>
+            <div class="text-center">
+                <p id="typing"></p>
+            </div>
         </div>
     </div>
     <div class="row">

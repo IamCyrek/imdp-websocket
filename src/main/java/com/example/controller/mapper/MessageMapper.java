@@ -12,9 +12,10 @@ import java.util.List;
 public interface MessageMapper {
 
     @Mapping(target = "userName", constant = "")
-    @Mapping(source = "name", target = "content")
-    @Mapping(source = "creationTime", target = "creationTime")
-    Message userDtoToMessage(UserDTO userDTO);
+    @Mapping(source = "userDTO.name", target = "content")
+    @Mapping(source = "userDTO.creationTime", target = "creationTime")
+    @Mapping(source = "room", target = "room")
+    Message userDtoToMessage(UserDTO userDTO, Long room);
 
 
     @Named("messageToMessageDTO")
@@ -29,16 +30,13 @@ public interface MessageMapper {
         messageDTO.setContent(HtmlUtils.htmlEscape(messageDTO.getContent()));
     }
 
-    @Named("messageDtoToMessage")
-    @Mapping(source = "userName", target = "userName")
-    @Mapping(source = "content", target = "content")
-    @Mapping(source = "creationTime", target = "creationTime")
-    Message messageDtoToMessage(MessageDTO messageDTO);
+    @Mapping(source = "messageDTO.userName", target = "userName")
+    @Mapping(source = "messageDTO.content", target = "content")
+    @Mapping(source = "messageDTO.creationTime", target = "creationTime")
+    @Mapping(source = "room", target = "room")
+    Message messageDtoToMessage(MessageDTO messageDTO, Long room);
 
     @IterableMapping(qualifiedByName = "messageToMessageDTO")
     List<MessageDTO> messageToMessageDTO(List<Message> message);
-
-    @IterableMapping(qualifiedByName = "messageDtoToMessage")
-    List<Message> messageDtoToMessage(List<MessageDTO> messageDTO);
 
 }

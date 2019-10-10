@@ -1,20 +1,25 @@
 var stompClient = null;
+var room = 0;
 var userName = "";
 
 var isFirstTyping = true;
 var typingTimer;
 var doneTypingInterval = 3000;
 
+function hideRoom() {
+    $("#roomForm").css("display", "none");
+}
+
+function hideConnection() {
+    $("#connectionForm").css("display", "none");
+}
+
 function hideName() {
-    $("#inputLabelName").hide();
-    $("#inputTextName").hide();
-    $("#sendName").hide();
+    $("#name").css("display", "none");
 }
 
 function hideMessage() {
-    $("#inputLabel").hide();
-    $("#inputText").hide();
-    $("#send").hide();
+    $("#message").css("display", "none");
 }
 
 function hideConversation() {
@@ -22,26 +27,35 @@ function hideConversation() {
     $("#conversation").hide();
 }
 
-function hideAll() {
+function hideRight() {
     hideName();
     hideMessage();
     hideConversation();
 }
 
-function showName() {
-    hideMessage();
+function showConnection() {
+    hideRoom();
 
-    $("#inputLabelName").show();
-    $("#inputTextName").show();
-    $("#sendName").show();
+    $("#connectionForm").css("display", "block");
+}
+
+function showRoom() {
+    hideConnection();
+
+    $("#roomForm").css("display", "block");
+}
+
+function showName() {
+    hideRight();
+
+    $("#name").css("display", "block");
 }
 
 function showMessage() {
-    hideName();
+    hideRight();
+    showConversation();
 
-    $("#inputLabel").show();
-    $("#inputText").show();
-    $("#send").show();
+    $("#message").css("display", "block");
 }
 
 function showConversation() {
@@ -54,28 +68,19 @@ function showTyping(text) {
 }
 
 function showMessageInTable(message) {
-    $("#messages").append(
-        "<tr>" +
-        "<td>" + message.userName + "</td>" +
-        "<td>" + message.content + "</td>" +
-        "</tr>"
-    );
-}
-
-function setConnected(connected) {
-    $("#connect").prop("disabled", connected);
-    $("#disconnect").prop("disabled", !connected);
-    $("#messages").html("");
+    $("<tr>" +
+      "<td>" + message.userName + "</td>" +
+      "<td>" + message.content + "</td>" +
+      "</tr>").prependTo("#messages");
 }
 
 function setInputForm(connected) {
     if (connected) {
         showName();
-        showConversation();
 
         $("#inputTextName").val(userName);
     } else {
-        hideAll();
+        hideRight();
     }
 }
 
@@ -83,21 +88,19 @@ function connect() {
     var socket = new SockJS('/websocket-example');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        setConnected(true);
         setInputForm(true);
 
         console.log('Connected: ' + frame);
 
-        stompClient.subscribe('/topic/messages', function (message) {
+        stompClient.subscribe('/topic/messages/' + room, function (message) {
             showMessageInTable(JSON.parse(message.body));
         });
 
-        stompClient.subscribe('/topic/typing', function (message) {
+        stompClient.subscribe('/topic/typing/' + room, function (message) {
             var names = JSON.parse(message.body);
             names = $.grep(names, function (name) {
                 return userName !== name;
             });
-            console.log(names);
 
             if (names.length === 0) {
                 showTyping("");
@@ -110,7 +113,7 @@ function connect() {
             }
         });
 
-        var hello = stompClient.subscribe('/topic/hello', function (messages) {
+        var hello = stompClient.subscribe('/topic/hello/' + room, function (messages) {
             $(JSON.parse(messages.body)).each(function (idx, obj) {
                 showMessageInTable(obj);
             });
@@ -124,16 +127,26 @@ function disconnect() {
         stompClient.disconnect();
     }
 
-    setConnected(false);
+    $("#messages").html("");
+
     setInputForm(false);
 
+    showRoom();
+
     console.log("Disconnected");
+}
+
+function chooseRoom() {
+    room = $("#room").val();
+
+    showConnection();
+    connect();
 }
 
 function sendName() {
     userName = $("#inputTextName").val();
 
-    stompClient.send("/app/hello", {}, JSON.stringify(
+    stompClient.send("/app/hello/" + room, {}, JSON.stringify(
         {
             'name': userName,
             'creationTime': +new Date()
@@ -143,7 +156,7 @@ function sendName() {
 }
 
 function sendMessage() {
-    stompClient.send("/app/messaging", {}, JSON.stringify(
+    stompClient.send("/app/messaging/" + room, {}, JSON.stringify(
         {
             'userName': userName,
             'content': $("#inputText").val(),
@@ -154,7 +167,7 @@ function sendMessage() {
 }
 
 function sendTyping(isTyping) {
-    stompClient.send("/app/typing", {}, JSON.stringify(
+    stompClient.send("/app/typing/" + room, {}, JSON.stringify(
         {
             'userName': userName,
             'isTyping': isTyping
@@ -165,11 +178,11 @@ $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
-    $("#connect").click(function () {
-        connect();
-    });
     $("#disconnect").click(function () {
         disconnect();
+    });
+    $("#chooseRoom").click(function () {
+        chooseRoom();
     });
     $("#sendName").click(function () {
         sendName();
@@ -178,7 +191,8 @@ $(function () {
         sendMessage();
     });
 
-    hideAll();
+    hideConnection();
+    hideRight();
 
     $("#inputTextName").attr('maxlength', '63');
     $("#inputText").attr('maxlength', '255');
@@ -196,6 +210,7 @@ $(function () {
 
     $("#inputText").on('keydown', function () {
         clearTimeout(typingTimer);
+        typingTimer = setTimeout(doneTyping, doneTypingInterval);
     });
 
     function doneTyping() {
