@@ -3,6 +3,7 @@ package com.example.model;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -30,5 +31,10 @@ public class Message {
     @Column(nullable = false, name = "creation_time")
     @NotNull
     private Date creationTime;
+
+    @Column(nullable = false)
+    @NotNull
+    @Max(9)
+    private Long room;
 
 }

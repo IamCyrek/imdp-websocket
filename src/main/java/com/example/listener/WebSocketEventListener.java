@@ -32,16 +32,19 @@ public class WebSocketEventListener {
         String userName =
                 (String) Objects.requireNonNull(
                         headerAccessor.getSessionAttributes()).get("userName");
-        if(userName != null) {
-            MessageDTO messageDTO = new MessageDTO();
-            messageDTO.setUserName("");
-            messageDTO.setContent("Bye, " + userName + ".");
-            messageDTO.setCreationTime(new Date());
+        Long room =
+                (Long) Objects.requireNonNull(
+                        headerAccessor.getSessionAttributes()).get("room");
 
-            messageService.save(messageMapper.messageDtoToMessage(messageDTO));
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setUserName("");
+        messageDTO.setContent("Bye, " + userName + ".");
+        messageDTO.setCreationTime(new Date());
 
-            messagingTemplate.convertAndSend("/topic/messages", messageDTO);
-        }
+        messageService.save(messageMapper.messageDtoToMessage(messageDTO, room));
+        messageService.typing(room, userName, false);
+
+        messagingTemplate.convertAndSend("/topic/messages/" + room, messageDTO);
     }
 
 }
